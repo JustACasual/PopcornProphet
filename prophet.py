@@ -1,25 +1,30 @@
 import random
 from imdb import Cinemagoer
+import requests
+from bs4 import BeautifulSoup, NavigableString
+import json
 
-# Define the IMDb top 50 movies list again.
+
+# Define the IMDb top 50 movies list using Wikipedia page.
 def get_top_50_movies():
-    ia = Cinemagoer()
+    url = "https://de.wikipedia.org/wiki/IMDb_Top_250_Movies"
+    response = requests.get(url)
+    soup = BeautifulSoup(response.text, "html.parser")
+    movie_table = soup.find("table", class_="wikitable")
     top_50_movies = []
-    top_movies = ia.get_top250_movies()
-    for i, movie in enumerate(top_movies[:50]):
-        title = movie['title']
-        year = movie['year']
-        top_50_movies.append((i+1, title, year))
+    for row in movie_table.find_all("tr")[1:51]:
+        cells = row.find_all("td")
+        rank_content = [content for content in cells[0].contents if isinstance(content, NavigableString)]
+        rank = int(rank_content[0].strip())
+        title = cells[1].text.strip()
+        year = int(cells[2].text.strip())
+        top_50_movies.append({"rank": rank, "title": title, "year": year})
     return top_50_movies
 
 # Recommended movies so far, including the previous state before reset.
 def get_recommended_movies():
-    recommended_movies = [
-        (2, "The Godfather", 1972),
-        (3, "The Godfather: Part II", 1974),
-        (35, "Back to the Future", 1985),
-        (8, "Pulp Fiction", 1994),
-    ]
+    with open("history.json", "r") as file:
+        recommended_movies = json.load(file)
     return recommended_movies
 
 # Function to pick another random movie from the top 50, excluding already recommended ones.
@@ -37,8 +42,28 @@ def get_all_recommendations(recommended_movies):
 
 # Display the next recommendation and the updated list of all recommended movies.
 def display_recommendations(next_recommendation, recommendations):
-    print("Next Recommendation:", next_recommendation)
-    print("All Recommendations:", recommendations)
+    print("Next Recommendation:")
+    print("Rank:", next_recommendation['rank'])
+    print("Title:", next_recommendation['title'])
+    print("Year:", next_recommendation['year'])
+    user_input = input("Show all recommendations? (y/n): ")
+    if user_input.lower() == "y":
+        print("All Recommendations:")
+        for recommendation in recommendations:
+            print("Rank:", recommendation['rank'])
+            print("Title:", recommendation['title'])
+            print("Year:", recommendation['year'])
+            print("---------------------------------")
+
+# Save the updated list of recommended movies to a file.
+def save_recommendations(recommended_movies):
+    user_confirmation = input("Save recommendation? (y/n): ")
+    if user_confirmation.lower() == "y":
+        with open("history.json", "w") as file:
+            json.dump(recommended_movies, file, indent=4)
+        print("Recommendation saved.")
+    else:
+        print("Recommendation not saved.")
 
 def main():
     top_50_movies = get_top_50_movies()
@@ -46,6 +71,7 @@ def main():
     next_recommendation = recommend_movie(top_50_movies, recommended_movies)
     recommendations = get_all_recommendations(recommended_movies)
     display_recommendations(next_recommendation, recommendations)
+    save_recommendations(recommended_movies)
 
 if __name__ == "__main__":
     main()

@@ -162,3 +162,4 @@ cython_debug/
 
 pastProphecies.json
 .vscode/launch.json
+history.json
