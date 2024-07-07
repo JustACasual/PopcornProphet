@@ -21,10 +21,15 @@ def get_top_50_movies():
         top_50_movies.append({"rank": rank, "title": title, "year": year})
     return top_50_movies
 
-# Recommended movies so far, including the previous state before reset.
+# Recommended movies so far
 def get_recommended_movies():
-    with open("history.json", "r") as file:
-        recommended_movies = json.load(file)
+    try:
+        with open("history.json", "r") as file:
+            recommended_movies = json.load(file)
+    except FileNotFoundError:
+        recommended_movies = []
+        with open("history.json", "w") as file:
+            json.dump(recommended_movies, file, indent=4)
     return recommended_movies
 
 # Function to pick another random movie from the top 50, excluding already recommended ones.
@@ -43,15 +48,15 @@ def get_all_recommendations(recommended_movies):
 # Display the next recommendation and the updated list of all recommended movies.
 def display_recommendations(next_recommendation, recommendations):
     print("Next Recommendation:")
-    print("Rank:", next_recommendation['rank'])
     print("Title:", next_recommendation['title'])
+    print("Rank:", next_recommendation['rank'])
     print("Year:", next_recommendation['year'])
     user_input = input("Show all recommendations? (y/n): ")
     if user_input.lower() == "y":
         print("All Recommendations:")
         for recommendation in recommendations:
-            print("Rank:", recommendation['rank'])
             print("Title:", recommendation['title'])
+            print("Rank:", recommendation['rank'])
             print("Year:", recommendation['year'])
             print("---------------------------------")
 
