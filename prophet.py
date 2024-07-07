@@ -1,5 +1,4 @@
 import random
-from imdb import Cinemagoer
 import requests
 from bs4 import BeautifulSoup, NavigableString
 import json
