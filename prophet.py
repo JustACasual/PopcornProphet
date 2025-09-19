@@ -7,7 +7,10 @@ import json
 # Define the IMDb top 50 movies list using Wikipedia page.
 def get_top_50_movies():
     url = "https://de.wikipedia.org/wiki/IMDb_Top_250_Movies"
-    response = requests.get(url)
+    headers = {
+        'User-Agent': 'PopcornProphet/1.0 (https://github.com/user/PopcornProphet; contact@example.com) Python-requests'
+    }
+    response = requests.get(url, headers=headers)
     soup = BeautifulSoup(response.text, "html.parser")
     movie_table = soup.find("table", class_="wikitable")
     top_50_movies = []
